@@ -20,6 +20,7 @@ var cryptor = new wechatcrypto(token, AESkey, corpID);
 var numbers = 0;
 var flag = 0;
 var flag1 = 0;
+var flag2 = 0;
 var userid = new Array();
 for(i=0;i<20;i++){
     userid[i]=0;
@@ -69,11 +70,23 @@ var severe = http.createServer(function (request, response) {
 				var toNumber = storeDelNumber.shift();
 				console.log('toNumber:'+toNumber);
 				userid[toNumber-1] = result.xml.FromUserName[0];
-				var ress = replyText(result,'预约成功！你的预约号为'+toNumber);
+                                var ress = replyText(result,'******预约成功!*****\n'+
+                                                            '******预约凭证******\n'+
+                                                            '预约号：'+toNumber+'\n'+
+                                                            '用户名：'+result.xml.FromUserName[0]+'\n'+
+                                                            '***请于开车前上车***\n'+
+                                                            '********************\n'
+                                                    );
 			}
 	                else{
                     numbers++; 
-                    var ress = replyText(result,'预约成功！你的预约号为'+numbers);
+                    var ress= replyText(result,'******预约成功!*****\n'+
+                                                '******预约凭证******\n'+
+                                                '预约号：'+numbers+'\n'+
+                                                '用户名：'+result.xml.FromUserName[0]+'\n'+
+                                                '***请于开车前上车***\n'+
+                                                '********************\n'
+                                                    );
                     userid[numbers-1]=result.xml.FromUserName[0];
 		    console.log('userid'+userid[numbers-1]);
                     console.log('ress:' + ress);
@@ -84,6 +97,28 @@ var severe = http.createServer(function (request, response) {
                    
                 
                 }
+               else if (result.xml.EventKey[0]== 'pingzheng'){
+                    
+                    for (var i = 0;i < userid.length;i++){
+                    if (userid[i] != result.xml.FromUserName[0])
+                      continue;
+                    else
+                    {
+                    var ress = replyText(result,'******预约成功!*****\n'+
+                                             '******预约凭证******\n'+
+                                             '预约号：'+(i+1)+'\n'+
+                                             '用户名：'+userid[i]+'\n'+
+                                             '***请于开车前上车***\n'+
+                                             '********************\n'
+                                             );
+                    console.log('ress:' + ress);
+                    flag2 = 1;
+                    }
+                  }
+                  if (flag2 != 1)
+                 var ress = replyText(result,'你还未预约，请先预约！');
+                 flag2 = 0;         
+              }
                 else if (result.xml.EventKey[0]== 'cancel'){
               
                     for (var i = 0;i < userid.length;i++){
@@ -185,7 +220,7 @@ function getToken(corpID, corpsecret) {
 }
 //setTimeout(getToken(corpID, corpsecret));
 
-/*var menu = {
+var menu = {
     "button": [
         {
             "name": "校车预约",
@@ -199,6 +234,11 @@ function getToken(corpID, corpsecret) {
                     "type": "click",
                     "name": "取消预约",
                     "key": "cancel"
+                } ,
+                {
+                    "type": "click",
+                    "name": "预约凭证",
+                    "key": "pingzheng"
                 }
             ]
         },
@@ -229,7 +269,7 @@ var post_str = new Buffer(JSON.stringify(menu));
 var post_options = {
     host: 'qyapi.weixin.qq.com',
     port: '443',
-    path: '/cgi-bin/menu/create?access_token='+ access_token +'&agentid=55',
+    path: '/cgi-bin/menu/create?access_token=iuXP9ZwzSjPXJOKriTOpoLC5GwjfTs-6ImuF4cKg7GU9logpogzOVBFGMzo7KU-i&agentid=55',
     method: 'POST',
     headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -250,7 +290,7 @@ var post_req = https.request(post_options, function (response) {
     });
 });
 post_req.write(post_str);
-post_req.end();*/
+post_req.end();
 
 severe.listen(4000, function () {
     console.log("listen 4000");
